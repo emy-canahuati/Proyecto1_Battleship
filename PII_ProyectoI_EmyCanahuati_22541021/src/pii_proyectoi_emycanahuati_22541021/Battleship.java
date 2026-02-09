@@ -14,9 +14,11 @@ import java.util.ArrayList;
 public class Battleship {
     protected ArrayList <Player> jugadores= new ArrayList<>();
     protected boolean [][] bombas_Player1;
-    protected boolean [][] barcos_Player1;
+    protected Barco [][] barcos_Player1;
     protected boolean [][] bombas_Player2;
-    protected boolean [][] barcos_Player2;
+    protected Barco [][] barcos_Player2;
+    protected String [][] tablero_Player1;
+    protected String [][] tablero_Player2;
     protected String modo,  fin_partida, dificultad;
     protected int jugador1,jugador2, turno;
     protected int barcosDisponibles;
@@ -24,23 +26,27 @@ public class Battleship {
     public Battleship() {
         modo="TUTORIAL";
         dificultad="NORMAL";
-        barcos_Player1= new boolean [8][8];
-        barcos_Player2= new boolean [8][8];
-        for (int contador1=0; contador1<8; contador1++){
-            for (int contador2=0; contador2<8;contador2++){
-                barcos_Player1[contador1][contador2]=false;
-                barcos_Player2[contador1][contador2]=false;
+        barcos_Player1= new Barco [8][8];
+        barcos_Player2= new Barco [8][8];
+        tablero_Player1= new String [8][8];
+        tablero_Player2= new String [8][8];
+        bombas_Player1 = new boolean[8][8];
+        bombas_Player2 = new boolean[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                tablero_Player1[i][j] = "";
+                tablero_Player2[i][j] = "";
             }
         }
         turno=1;
-        
+        barcosDisponibles();
     }
     public void retirada(){
         
     }
     public int crearPlayers(String nombre_CrearPlayer, String contraseña){ //se crean los players, en el main se muestran diferentes mensajes dependiendo del numero que se retorne
-        for (int contador=0;contador<jugadores.size();contador++){
-            if (jugadores.get(contador).getNombre().equals(nombre_CrearPlayer))
+        for (Player jugador: jugadores){
+            if (jugador.getNombre().equals(nombre_CrearPlayer))
                 return -1;
         }
         Player jugador= new Player(nombre_CrearPlayer, contraseña);
@@ -83,20 +89,35 @@ public class Battleship {
             return false;
         }
     }
-    public void colocarBarcos(int contador1, int contador2){
+    
+    public void colocarBarcos(int contador1, int contador2, String ID){
         if(turno==1){
-            this.barcos_Player1[contador1][contador2]=true;
-            barcosDisponibles-=1;
+            if (barcos_Player1[contador1][contador2]!=null && barcos_Player1[contador1][contador2].isSeleccionado()){
+                throw new IllegalArgumentException ("No puede colocar dos barcos en la misma posición.");
+            }
+            else if (barcos_Player1[contador1][contador2]==null){
+                barcos_Player1[contador1][contador2]= new Barco(ID);
+                barcos_Player1[contador1][contador2].setSeleccionado(true);
+                barcosDisponibles-=1;
+            }
         }else if (turno==2){
-            this.barcos_Player2[contador1][contador2]=true;
-            barcosDisponibles-=1;
+            if (barcos_Player2[contador1][contador2]!=null && barcos_Player2[contador1][contador2].isSeleccionado()){
+                throw new IllegalArgumentException ("No puede colocar dos barcos en la misma posición.");
+            }
+            else if (barcos_Player2[contador1][contador2]==null){
+                barcos_Player2[contador1][contador2]= new Barco(ID);
+                barcos_Player2[contador1][contador2].setSeleccionado(true);
+                barcosDisponibles-=1;
+                
+            }
         }
     }
+       
     public void colocarBombas(int contador1, int contador2){
         if(turno==1){
-            this.bombas_Player1[contador1][contador2]=true;
+            bombas_Player1[contador1][contador2]=true;
         }else if (turno==2){
-            this.bombas_Player2[contador1][contador2]=true;
+            bombas_Player2[contador1][contador2]=true;
         }
     }
     public void turno(){
@@ -112,14 +133,21 @@ public class Battleship {
     }
     
     public void barcosDisponibles(){
-        if (dificultad.equals("EASY")){
-            barcosDisponibles=5;
-        }else if (dificultad.equals("NORMAL")){
-            barcosDisponibles=4;
-        }else if(dificultad.equals("EXPERT")){
-            barcosDisponibles=2;
-        }else if (dificultad.equals("GENIUS")){
-            barcosDisponibles=1;
+        switch (dificultad) {
+            case "EASY":
+                barcosDisponibles=5;
+                break;
+            case "NORMAL":
+                barcosDisponibles=4;
+                break;
+            case "EXPERT":
+                barcosDisponibles=2;
+                break;
+            case "GENIUS":
+                barcosDisponibles=1;
+                break;
+            default:
+                break;
         }
     }
     
@@ -127,7 +155,43 @@ public class Battleship {
         return barcosDisponibles;
     }
     
+    public boolean compararPosiciones(int contador1, int contador2){
+        if(turno==1){
+            if (barcos_Player2[contador1][contador2]!=null && barcos_Player2[contador1][contador2].isSeleccionado()){
+                barcos_Player2[contador1][contador2].restarCant_bombas();
+                if (barcos_Player2[contador1][contador2].getCant_bombas()==0)
+                    throw new IllegalArgumentException("Se hundio el "+barcos_Player2[contador1][contador2].getNombre()+" de "+jugadores.get(1).getNombre());
+                else
+                    return true;
+            }else
+                return false;
+        }else if (turno==2){
+            if (barcos_Player1[contador1][contador2]!=null && barcos_Player1[contador1][contador2].isSeleccionado()){
+                barcos_Player1[contador1][contador2].restarCant_bombas();
+                if (barcos_Player1[contador1][contador2].getCant_bombas()==0)
+                    throw new IllegalArgumentException("Se hundio el "+barcos_Player1[contador1][contador2].getNombre()+" de "+jugadores.get(0).getNombre());
+                else
+                    return true;
+            }else
+                return false;
+        }
+        return false;
+    }
     
+    public void setPosicionTableros(int contador1, int contador2){
+        if (turno==1 && barcos_Player2[contador1][contador2]!=null){
+            tablero_Player2[contador1][contador2]=barcos_Player2[contador1][contador2].getID();
+        }else if (turno==2 && barcos_Player1[contador1][contador2]!=null){
+            tablero_Player1[contador1][contador2]=barcos_Player1[contador1][contador2].getID();
+        }
+    }
     
+    public void setDificultad(String dificultad){
+        this.dificultad=dificultad;
+        barcosDisponibles();
+    }
     
+    public void setModo(String modo){
+        this.modo=modo;
+    }
 }

@@ -36,7 +36,7 @@ public class Player {
         return puntos;
     }
     void setUltimasPartidas(String ganador,String perdedor,String modo, String fin_partida, int contador){
-        while(contador>0){
+        if(contador<ultimas_partidas.length){
             if (fin_partida.equals("hundimiento")) {//significa que alguno de los jugadores hundio todos los barcos del otro
                 ultimas_partidas[contador]=ganador+" hundió todos los barcos de "+perdedor+" en modo "+modo;
             }else{ 

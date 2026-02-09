@@ -61,10 +61,10 @@ public class MainApp extends JFrame{
         salir= new JMenuItem ("Salir");
         salir.setFont(fuente);
         menuInicio.add(login);
-        ventana_login();
+        login.addActionListener(e -> ventana_login());
         menuInicio.addSeparator();
         menuInicio.add(crearPlayer);
-        ventana_crear();
+        crearPlayer.addActionListener(e -> ventana_crear());
         menuInicio.addSeparator();
         menuInicio.add(salir);
         salir.addActionListener(e -> System.exit(0));
@@ -75,139 +75,118 @@ public class MainApp extends JFrame{
     
     }
     
-    public void ventana_login(){
-        login.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed (ActionEvent e){
-                    JFrame ventana_login = new JFrame();
-                    ventana_login.setLayout(null);
-                    ventana_login.setSize(600,450);
-                    ventana_login.setTitle("Login");
-                    ventana_login.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-                    ventana_login.setLocationRelativeTo(null);
-                    
-                    tituloLogin= new JLabel("LOGIN");
-                    tituloLogin.setBounds(30,30,250,30);
-                    tituloLogin.setFont(fuente);
-                    ventana_login.add(tituloLogin);
-                    
-                    etiquetaNomLogin = new JLabel("Ingrese su nombre de usuario:");
-                    etiquetaNomLogin.setBounds(30,80,450,30);
-                    etiquetaNomLogin.setFont(fuente);
-                    ventana_login.add(etiquetaNomLogin);
-                    
-                    etiquetaContraLogin= new JLabel("Ingrese su contraseña:");
-                    etiquetaContraLogin.setBounds(30,185,450,30);
-                    etiquetaContraLogin.setFont(fuente);
-                    ventana_login.add(etiquetaContraLogin);
-                    
-                    nomPlayer1 = new JTextField();
-                    nomPlayer1.setBounds(30, 135, 450, 40);
-                    nomPlayer1.setFont(fuente);
-                    ventana_login.add(nomPlayer1);
-        
-                    contraPlayer1 = new JPasswordField();
-                    contraPlayer1.setBounds(30, 235, 450, 40);
-                    contraPlayer1.setFont(fuente);
-                    ventana_login.add(contraPlayer1);
-                    
-                    ingresar= new JButton("Ingresar");
-                    ingresar.setBounds(50, 300,180, 50);
-                    ingresar.setFont(fuente);
-                    ventana_login.add(ingresar);
-                    ingresar.addActionListener(ev -> {
-                        if(battle.Login(nomPlayer1.getText(), contraPlayer1.getText())){
-                                ventana_login.dispose();
-                                JFrame menuPrincipal= new MenuPrincipal(battle);
-                            }
-                    });
-                
-                    cancelarLogin= new JButton ("Cancelar");
-                    cancelarLogin.setBounds(350,300, 180,50);
-                    cancelarLogin.setFont(fuente);
-                    ventana_login.add(cancelarLogin);
-                    
-                    cancelarLogin.addActionListener(i -> menuInicio());
-                    ventana_login.setVisible(true);
-                    
+    public void ventana_login() {
+        JFrame ventana_login = new JFrame();
+        ventana_login.setLayout(null);
+        ventana_login.setSize(600, 450);
+        ventana_login.setTitle("Login");
+        ventana_login.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        ventana_login.setLocationRelativeTo(null);
+
+        tituloLogin = new JLabel("LOGIN");
+        tituloLogin.setBounds(30, 30, 250, 30);
+        tituloLogin.setFont(fuente);
+        ventana_login.add(tituloLogin);
+
+        etiquetaNomLogin = new JLabel("Ingrese su nombre de usuario:");
+        etiquetaNomLogin.setBounds(30, 80, 450, 30);
+        etiquetaNomLogin.setFont(fuente);
+        ventana_login.add(etiquetaNomLogin);
+
+        etiquetaContraLogin = new JLabel("Ingrese su contraseña:");
+        etiquetaContraLogin.setBounds(30, 185, 450, 30);
+        etiquetaContraLogin.setFont(fuente);
+        ventana_login.add(etiquetaContraLogin);
+
+        nomPlayer1 = new JTextField();
+        nomPlayer1.setBounds(30, 135, 450, 40);
+        nomPlayer1.setFont(fuente);
+        ventana_login.add(nomPlayer1);
+
+        contraPlayer1 = new JPasswordField();
+        contraPlayer1.setBounds(30, 235, 450, 40);
+        contraPlayer1.setFont(fuente);
+        ventana_login.add(contraPlayer1);
+
+        ingresar = new JButton("Ingresar");
+        ingresar.setBounds(50, 300, 180, 50);
+        ingresar.setFont(fuente);
+        ventana_login.add(ingresar);
+        ingresar.addActionListener(ev -> {
+            if (battle.Login(nomPlayer1.getText(), contraPlayer1.getText())) {
+                ventana_login.dispose();
+                MenuPrincipal menu = new MenuPrincipal(battle);
+                menu.setVisible(true);
+            }
+        });
+
+        cancelarLogin = new JButton("Cancelar");
+        cancelarLogin.setBounds(350, 300, 180, 50);
+        cancelarLogin.setFont(fuente);
+        ventana_login.add(cancelarLogin);
+
+        cancelarLogin.addActionListener(i -> menuInicio());
+        ventana_login.setVisible(true);
+
+    }
+    
+    public void ventana_crear() {
+        JFrame ventana_crear = new JFrame();
+        ventana_crear.setLayout(null);
+        ventana_crear.setTitle("Crear Player");
+        ventana_crear.setSize(600, 450);
+        ventana_crear.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        ventana_crear.setLocationRelativeTo(null);
+
+        tituloCrear = new JLabel("CREAR UN NUEVO PLAYER");
+        tituloCrear.setBounds(30, 30, 400, 30);
+        tituloCrear.setFont(fuente);
+        ventana_crear.add(tituloCrear);
+
+        etiquetaNomCrear = new JLabel("Ingrese su nombre de usuario:");
+        etiquetaNomCrear.setBounds(30, 80, 450, 30);
+        etiquetaNomCrear.setFont(fuente);
+        ventana_crear.add(etiquetaNomCrear);
+
+        etiquetaContraCrear = new JLabel("Ingrese su contraseña:");
+        etiquetaContraCrear.setBounds(30, 185, 450, 30);
+        etiquetaContraCrear.setFont(fuente);
+        ventana_crear.add(etiquetaContraCrear);
+
+        nomPlayerCrear = new JTextField();
+        nomPlayerCrear.setBounds(30, 135, 450, 40);
+        nomPlayerCrear.setFont(fuente);
+        ventana_crear.add(nomPlayerCrear);
+
+        contraPlayerCrear = new JPasswordField();
+        contraPlayerCrear.setBounds(30, 235, 450, 40);
+        contraPlayerCrear.setFont(fuente);
+        ventana_crear.add(contraPlayerCrear);
+
+        crear = new JButton("Crear");
+        crear.setBounds(50, 300, 180, 50);
+        crear.setFont(fuente);
+        ventana_crear.add(crear);
+        crear.addActionListener(ev -> {
+            if (nomPlayerCrear.getText().trim().isEmpty() || contraPlayerCrear.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Error: No puede dejar ninguno de los campos vacios");
+            } else {
+                if (battle.crearPlayers(nomPlayerCrear.getText(), contraPlayerCrear.getText()) == -1) {
+                    JOptionPane.showMessageDialog(null, "Error: Este player ya existe");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Jugador Creado");
                 }
-                 
-        });
-    }
-    
-    public void ventana_crear(){
-        crearPlayer.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed (ActionEvent e){
-                JFrame ventana_crear = new JFrame();
-                ventana_crear.setLayout(null);
-                ventana_crear.setTitle("Crear Player");
-                ventana_crear.setSize(600,450);
-                ventana_crear.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-                ventana_crear.setLocationRelativeTo(null);
-                
-                tituloCrear = new JLabel("CREAR UN NUEVO PLAYER");
-                tituloCrear.setBounds(30,30,400,30);
-                tituloCrear.setFont(fuente);
-                ventana_crear.add(tituloCrear);
-                
-                etiquetaNomCrear = new JLabel("Ingrese su nombre de usuario:");
-                etiquetaNomCrear.setBounds(30,80,450,30);
-                etiquetaNomCrear.setFont(fuente);
-                ventana_crear.add(etiquetaNomCrear);
-                   
-                etiquetaContraCrear= new JLabel("Ingrese su contraseña:");
-                etiquetaContraCrear.setBounds(30,185,450,30);
-                etiquetaContraCrear.setFont(fuente);
-                ventana_crear.add(etiquetaContraCrear);
-                                       
-                nomPlayerCrear= new JTextField();
-                nomPlayerCrear.setBounds(30, 135, 450, 40);
-                nomPlayerCrear.setFont(fuente);
-                ventana_crear.add(nomPlayerCrear);
-        
-                contraPlayerCrear = new JPasswordField();
-                contraPlayerCrear.setBounds(30, 235, 450, 40);
-                contraPlayerCrear.setFont(fuente);
-                ventana_crear.add(contraPlayerCrear);
-                                        
-                crear= new JButton("Crear");
-                crear.setBounds(50, 300,180, 50);
-                crear.setFont(fuente);                    
-                ventana_crear.add(crear);
-                btncrear();
-                
-                cancelarCrear= new JButton("Cancelar");
-                cancelarCrear.setBounds(350,300, 180,50);
-                cancelarCrear.setFont(fuente);
-                ventana_crear.add(cancelarCrear);
-              
-                cancelarCrear.addActionListener(i -> ventana_crear.dispose());
-                
-                ventana_crear.setVisible(true);
-            }
-            void btncrear(){
-                crear.addActionListener(new ActionListener(){
-                    @Override
-                    public void actionPerformed(ActionEvent e){
-                        if (nomPlayerCrear.getText().equals(" ") || contraPlayerCrear.getText().equals(" ") || nomPlayerCrear.getText().equals("") || contraPlayerCrear.getText().equals("")){
-                            JOptionPane.showMessageDialog(null, "Error: No puede dejar ninguno de los campos vacios");
-                            menuInicio();
-                        }else{
-                            if (battle.crearPlayers(nomPlayerCrear.getText(), contraPlayerCrear.getText())==-1){
-                                JOptionPane.showMessageDialog(null, "Error: Este player ya existe");
-                                menuInicio();
-                            }else{
-                                JOptionPane.showMessageDialog(null, "Jugador Creado");
-                            }
-                        }
-                    }
-                });
             }
         });
+
+        cancelarCrear = new JButton("Cancelar");
+        cancelarCrear.setBounds(350, 300, 180, 50);
+        cancelarCrear.setFont(fuente);
+        ventana_crear.add(cancelarCrear); 
+        cancelarCrear.addActionListener(i -> ventana_crear.dispose());
+
+        ventana_crear.setVisible(true);
     }
-   
-    
-    
-    
+
+
 }

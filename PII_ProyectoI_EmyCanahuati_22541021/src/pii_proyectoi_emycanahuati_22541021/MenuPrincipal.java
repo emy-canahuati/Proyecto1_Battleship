@@ -31,6 +31,9 @@ public class MenuPrincipal extends JFrame{
     protected JLabel nombre, tituloBattle, player_turno, contador_bombas,contador_barcos, status;
     protected JTextField nom_Player2;
     protected JButton exit, ingresar;
+    protected JPopupMenu idBarco;
+    protected JMenuItem portaaviones, acorazado, submarino, destructor;
+    protected String ID;
     
     //componentes de ventana configuracion
     protected JLabel tituloConfi, dificultad, modo;
@@ -101,12 +104,16 @@ public class MenuPrincipal extends JFrame{
         menuDifi.setBounds(20, 140 , 200,40);
         easy = new JMenuItem("EASY");
         easy.setFont(fuente);
+        easy.addActionListener(e -> battle.setDificultad("EASY"));
         normal = new JMenuItem("NORMAL");
         normal.setFont(fuente);
+        normal.addActionListener(e -> battle.setDificultad("NORMAL"));
         expert= new JMenuItem("EXPERT");
         expert.setFont(fuente);
+        expert.addActionListener(e -> battle.setDificultad("EXPERT"));
         genius= new JMenuItem("GENIUS");
         genius.setFont(fuente);
+        genius.addActionListener(e -> battle.setDificultad("GENIUS"));
         menuDifi.add(easy);
         menuDifi.addSeparator();
         menuDifi.add(normal);
@@ -121,23 +128,29 @@ public class MenuPrincipal extends JFrame{
         modo.setBounds(250,90,200,40);
         
         menuModo= new JPopupMenu();
-        menuModo.setBounds(20, 140 , 200,40);
-        easy = new JMenuItem("EASY");
-        easy.setFont(fuente);
-        normal = new JMenuItem("NORMAL");
-        normal.setFont(fuente);
-        expert= new JMenuItem("EXPERT");
-        expert.setFont(fuente);
-        genius= new JMenuItem("GENIUS");
-        genius.setFont(fuente);
-        menuModo.add(easy);
+        menuModo.setBounds(250, 140 , 200,40);
+        tutorial = new JMenuItem("TUTORIAL");
+        tutorial.setFont(fuente);
+        tutorial.addActionListener(e -> battle.setModo("TUTORIAL"));
+        arcade = new JMenuItem("ARCADE");
+        arcade.setFont(fuente);
+        arcade.addActionListener(e -> battle.setModo("ARCADE"));
+        menuModo.add(arcade);
         menuModo.addSeparator();
-        menuModo.add(normal);
-        menuModo.addSeparator();
-        menuModo.add(expert);
-        menuModo.addSeparator();
-        menuModo.add(genius);
+        menuModo.add(tutorial);
         configuracion.add(menuModo);
+        
+        dificultad.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseClicked(java.awt.event.MouseEvent e) {
+            menuDifi.show(dificultad, e.getX(), e.getY());
+        }
+        });
+        
+        modo.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseClicked(java.awt.event.MouseEvent e) {
+            menuModo.show(modo, e.getX(), e.getY());
+        }
+        });
         
         regresar= new JButton("Regresar");
         regresar.setFont(fuente);
@@ -212,7 +225,18 @@ public class MenuPrincipal extends JFrame{
         contador_barcos.setFont(fuente);
         contador_barcos.setBounds(20, 130, 300, 40);
         jugar.add(contador_barcos);
-
+        
+        boolean validacion=true;
+        do {
+            try{
+                ID=JOptionPane.showInputDialog("Ingrese el Código del Barco:");
+            }catch (Exception e){
+                validacion = false;
+                if (!(ID.equalsIgnoreCase("PA") || ID.equalsIgnoreCase("AZ") || ID.equalsIgnoreCase("SM") || ID.equalsIgnoreCase("DT")))
+                    JOptionPane.showMessageDialog(null, "Código invalido. Debe ingresar PA, AZ, SM o DT");
+            }
+        }while (validacion=false);
+        
         JPanel panelBarcos = new JPanel(new GridLayout(8, 8));
         panelBarcos.setBounds(20, 190, 550, 400);
         //creacion del tablero
@@ -229,10 +253,25 @@ public class MenuPrincipal extends JFrame{
                 final int columnas=col, filas=fila;
                 ubi_barcos[filas][columnas].addActionListener(e ->{
                     if (battle.getBarcosDisp()>0){
-                        battle.colocarBarcos(filas, columnas);//guarda las posiciones de lo sbarcos
+                        try{
+                            battle.colocarBarcos(filas, columnas, ID);//guarda las posiciones de los barcos
+                        }catch (Exception excep){
+                            JOptionPane.showMessageDialog(null, excep.getMessage());
+                        }
+                        contador_barcos.setText("Barcos Disponibles: "+battle.getBarcosDisp());
                         battle.turno();//cambia de turno
                         ubi_barcos[filas][columnas].setBackground(Color.red);//cambia de color el boton
                         JOptionPane.showMessageDialog(null, "Barco colocado en las coordenadas ("+filas+", "+columnas+")");
+                        boolean valid=true;
+                        do {
+                            try{
+                                ID=JOptionPane.showInputDialog("Ingrese el Código del Barco:");
+                            }catch (Exception i){
+                                valid = false;
+                                if (!(ID.equalsIgnoreCase("PA") || ID.equalsIgnoreCase("AZ") || ID.equalsIgnoreCase("SM") || ID.equalsIgnoreCase("DT")))
+                                    JOptionPane.showMessageDialog(null, "Código invalido. Debe ingresar PA, AZ, SM o DT");
+                            }
+                        }while (valid=false);
                     }else{
                         if (battle.getTurno()==2){ //si es el turno del jugador 2
                             JOptionPane.showMessageDialog(null, "¡Colocaste todos los barcos!");
@@ -244,7 +283,7 @@ public class MenuPrincipal extends JFrame{
 
                 });
             }
-    }
+        }
     
     jugar.getContentPane().add(panelBarcos);
     jugar.revalidate();
@@ -266,11 +305,6 @@ public class MenuPrincipal extends JFrame{
         player_turno.setBounds(20, 80, 300, 40);
         jugar.add(player_turno);
 
-        contador_bombas= new JLabel ("Bombas Disponibles: ");
-        contador_bombas.setFont(fuente);
-        contador_bombas.setBounds(20, 130, 300, 40);
-        jugar.add(contador_bombas);
-
         status= new JLabel ("Status:");
         status.setFont(fuente);
         status.setBounds(630,190,300,40);
@@ -288,11 +322,44 @@ public class MenuPrincipal extends JFrame{
         for (int fila = 0; fila < 8; fila++) {
             for (int col = 0; col < 8; col++) {
                 ubi_bombas[fila][col] = new JButton();
+                if(battle.getTurno()==1){
+                    if (!battle.tablero_Player2[fila][col].isEmpty()){
+                        if (battle.barcos_Player2[fila][col]!=null)
+                            ubi_bombas[fila][col].setText(battle.barcos_Player2[fila][col].getID());
+                    }
+                }else if (battle.getTurno()==2){
+                    if (!battle.tablero_Player1[fila][col].isEmpty()){
+                        if (battle.barcos_Player2[fila][col]!=null)
+                            ubi_bombas[fila][col].setText(battle.barcos_Player1[fila][col].getID());
+                    }
+                }
                 ubi_bombas[fila][col].setFont(new Font("Arial", Font.BOLD, 16));
                 panelTablero.add(ubi_bombas[fila][col]);
             }
         }
-
+        
+        for (int fila = 0; fila < 8; fila++) {
+            for (int col = 0; col < 8; col++){
+                final int columnas=col, filas=fila;
+                ubi_bombas[filas][columnas].addActionListener(e ->{
+                    try{
+                        if (battle.compararPosiciones(filas, columnas)){//guarda las posiciones de los barcos
+                            if (battle.getTurno()==1)
+                                JOptionPane.showMessageDialog(null, "Se ha bombardeado un "+battle.barcos_Player2[filas][columnas].getNombre());
+                            else if (battle.getTurno()==2)
+                                JOptionPane.showMessageDialog(null, "Se ha bombardeado un "+battle.barcos_Player1[filas][columnas].getNombre());
+                        }else{
+                            ubi_bombas[filas][columnas].setText("X");
+                        }   
+                    }catch (Exception excep){
+                            JOptionPane.showMessageDialog(null, excep.getMessage());
+                            battle.setPosicionTableros(filas, columnas);
+                    }
+                    battle.turno();//cambia de turno
+                });
+            }
+        }
+        
         jugar.getContentPane().add(panelTablero);
         jugar.revalidate();
         jugar.repaint();
