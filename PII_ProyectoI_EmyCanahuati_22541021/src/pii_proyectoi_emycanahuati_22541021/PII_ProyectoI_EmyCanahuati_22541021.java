@@ -17,7 +17,7 @@ public class PII_ProyectoI_EmyCanahuati_22541021 {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        MainApp menu = new MainApp();
+        MenuInicio menu = new MenuInicio();
         menu.setVisible(true);
     }
     

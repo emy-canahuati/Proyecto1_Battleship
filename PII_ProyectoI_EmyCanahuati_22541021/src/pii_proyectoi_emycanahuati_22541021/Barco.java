@@ -4,38 +4,38 @@
  */
 package pii_proyectoi_emycanahuati_22541021;
 
+import java.awt.Image;
+import javax.swing.ImageIcon;
+
 /**
  *
  * @author emyca
  */
 public class Barco {
     protected int cant_bombas, fila, columna;
-    protected String ID, nombre;
+    protected String nombre;
     protected boolean seleccionado;
+    protected ImageIcon icono;
+    protected Codigos ID;
+    
+    enum Codigos{
+        PA("Portaaviones", 5), AZ("Acorazado", 4), SM("Submarino", 3), DT("Destructor", 2);
+        public String nombre;
+        public int cant_bombas;
+        
+        Codigos(String nombre, int cant_bombas){
+            this.nombre=nombre;
+            this.cant_bombas=cant_bombas;
+            
+        }
+    }
+    
 
     public Barco(String ID){
-        this.ID=ID;
+        this.ID=Codigos.valueOf(ID);
         seleccionado=false;
-        switch (ID) {
-            case "PA":
-                cant_bombas=5;
-                nombre="Portaaviones";
-                break;
-            case "AZ":
-                cant_bombas=4;
-                nombre="Acorazado";
-                break;
-            case "SM":
-                cant_bombas=3;
-                nombre="Submarino";
-                break;
-            case "DT":
-                cant_bombas=2;
-                nombre="Destructor";
-                break;
-            default:
-                break;
-        }
+        nombre=this.ID.nombre;
+        cant_bombas=this.ID.cant_bombas;
     }
 
     public String getNombre() {
@@ -51,11 +51,11 @@ public class Barco {
     }
 
     public String getID() {
-        return ID;
+        return ID.name();
     }
 
     public void setID(String ID) {
-        this.ID = ID;
+        this.ID = Codigos.valueOf(ID);
     }
 
     public int getFila() {
@@ -79,5 +79,44 @@ public class Barco {
         this.columna=columna;
     }
    
+    public ImageIcon getIcon(){
+        switch (ID) {
+            case PA:
+                icono=new ImageIcon("src/Imagenes/portaaviones.png");
+                break;
+            case AZ:
+                icono=new ImageIcon("src/Imagenes/acorazado.png");
+                break;
+            case SM:
+                icono=new ImageIcon("src/Imagenes/submarino.png");
+                break;
+            case DT:
+                icono=new ImageIcon("src/Imagenes/destructor.png");
+                break;
+            default:
+                break;
+        }
+        return icono;
+    }
     
+    public ImageIcon getIconHits(){
+        switch (ID) {
+            case PA:
+                icono=new ImageIcon("src/Imagenes/portaaviones_hit.png");
+                break;
+            case AZ:
+                icono=new ImageIcon("src/Imagenes/acorazado_hit.png");
+                break;
+            case SM:
+                icono=new ImageIcon("src/Imagenes/submarino_hit.png");
+                break;
+            case DT:
+                icono=new ImageIcon("src/Imagenes/destructor_hit.png");
+                break;
+            default:
+                break;
+        }
+        
+        return icono;
+    }
 }
