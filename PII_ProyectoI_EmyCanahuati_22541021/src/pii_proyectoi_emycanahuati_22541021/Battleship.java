@@ -37,7 +37,7 @@ public class Battleship{
     }
     
     enum Dificultad{
-        EASY(5), NORMAL(4), EXPERT(3), GENIUS(2);
+        EASY(5), NORMAL(4), EXPERT(2), GENIUS(1);
         public int barcosDisponibles;
         
         Dificultad(int barcosDisponibles){
@@ -135,7 +135,7 @@ public class Battleship{
     public boolean setJugador2(String player2){
         if (jugadores.size()>1){
             for (int contador=0;contador<jugadores.size();contador++){
-                if (jugadores.get(contador)!=null){
+                if (jugadores.get(contador)!=null && !jugadores.get(contador).getNombre().equals(jugadores.get(jugador1).getNombre())){
                     if (player2.equals(jugadores.get(contador).getNombre())){
                         this.jugador2=contador;
                         return true;

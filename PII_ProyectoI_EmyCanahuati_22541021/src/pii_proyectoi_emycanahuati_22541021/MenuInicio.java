@@ -195,6 +195,7 @@ public class MenuInicio extends JFrame{
             } else {
                 if (battle.crearPlayers(nomPlayerCrear.getText(), contraPlayerCrear.getText())) {
                     JOptionPane.showMessageDialog(null, "¡Jugador Creado!");
+                    menuInicio();
                 } else {
                     JOptionPane.showMessageDialog(null, "Error: Este player ya existe");
                 }
