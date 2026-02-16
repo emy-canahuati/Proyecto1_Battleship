@@ -60,7 +60,8 @@ public class Battleship{
     public void nuevaPartida(){
     resetearTableros();
     resetContadores();
-    
+    this.dificultad= Configuracion.getDificultadActual();
+    this.modo=Configuracion.getModoActual();
     turno= 1;
     
     barcosVivosPlayer1 = dificultad.barcosDisponibles;

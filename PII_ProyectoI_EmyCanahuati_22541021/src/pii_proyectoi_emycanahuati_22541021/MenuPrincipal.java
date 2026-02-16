@@ -178,16 +178,27 @@ public class MenuPrincipal extends JFrame {
         menuDifi= new JPopupMenu();
         easy = new JMenuItem("EASY");
         easy.setFont(fuente);
-        easy.addActionListener(e -> battle.setDificultad("EASY"));
+        easy.addActionListener(e -> {
+            Configuracion.setDificultad("EASY"); // Llama al método estático
+            JOptionPane.showMessageDialog(null, "Dificultad cambiada a EASY");
+        });        
         normal = new JMenuItem("NORMAL");
         normal.setFont(fuente);
-        normal.addActionListener(e -> battle.setDificultad("NORMAL"));
-        expert= new JMenuItem("EXPERT");
+        normal.addActionListener(e -> {
+            Configuracion.setDificultad("NORMAL");
+            JOptionPane.showMessageDialog(null, "Dificultad cambiada a NORMAL");
+        });        expert= new JMenuItem("EXPERT");
         expert.setFont(fuente);
-        expert.addActionListener(e -> battle.setDificultad("EXPERT"));
+        expert.addActionListener(e -> {
+            Configuracion.setDificultad("EXPERT");
+            JOptionPane.showMessageDialog(null, "Dificultad cambiada a EXPERT");
+        });
         genius= new JMenuItem("GENIUS");
         genius.setFont(fuente);
-        genius.addActionListener(e -> battle.setDificultad("GENIUS"));
+        genius.addActionListener(e -> {
+            Configuracion.setDificultad("GENIUS");
+            JOptionPane.showMessageDialog(null, "Dificultad cambiada a GENIUS");
+        });
         menuDifi.add(easy);
         menuDifi.addSeparator();
         menuDifi.add(normal);
@@ -210,11 +221,16 @@ public class MenuPrincipal extends JFrame {
         menuModo= new JPopupMenu();
         tutorial = new JMenuItem("TUTORIAL");
         tutorial.setFont(fuente);
-        tutorial.addActionListener(e -> battle.setModo("TUTORIAL"));
+        tutorial.addActionListener(e -> {
+            Configuracion.setModo("TUTORIAL"); // Llama al método estático
+            JOptionPane.showMessageDialog(null, "Modo cambiado a TUTORIAL");
+        });        
         arcade = new JMenuItem("ARCADE");
         arcade.setFont(fuente);
-        arcade.addActionListener(e -> battle.setModo("ARCADE"));
-        
+        arcade.addActionListener(e -> {
+            Configuracion.setModo("ARCADE");
+            JOptionPane.showMessageDialog(null, "Modo cambiado a ARCADE");
+        });
         menuModo.add(arcade);
         menuModo.addSeparator();
         menuModo.add(tutorial);
@@ -625,7 +641,7 @@ private void pedirIDBarco() {
                 validacion = true;
             }
         } else if (idIngresado != null) {
-            JOptionPane.showMessageDialog(null, "Código inválido. Debe ingresar PA, AZ, SM o DT");
+            JOptionPane.showMessageDialog(null, "Código inválido\nDebe ingresar PA, AZ, SM o DT");
             validacion=true;
         }
     }while (validacion);
@@ -642,7 +658,7 @@ private void colocacion(int fila, int colum) {//cada vez que se toque un boton p
             contador_barcos.setText("Barcos Disponibles: " + battle.getBarcosDisp());// actualiza el jlabel
 
             if (battle.getBarcosDisp() > 0) {//pregunta por el ID
-                Timer timerID = new Timer(300, event2 -> {
+                Timer timerID = new Timer(200, event2 -> {
                     pedirIDBarco();
                 });
                 timerID.setRepeats(false);
@@ -749,7 +765,7 @@ private void bombardear(int fila, int columna) {//cada vez que toque un boton pa
             iconoOG = new ImageIcon("src/Imagenes/tiro_fallido.png");
             imagenRedimensionada = iconoOG.getImage().getScaledInstance(120, 75, Image.SCALE_SMOOTH);
             ubi_bombas[fila][columna].setIcon(new ImageIcon(imagenRedimensionada));
-            JOptionPane.showMessageDialog(null, "Golpeaste Agua. Intenta de nuevo en el próximo turno");
+            JOptionPane.showMessageDialog(null, "Golpeaste Agua\nIntenta de nuevo en el próximo turno");
         }
 
     } catch (Exception excepcion) {
@@ -761,7 +777,7 @@ private void bombardear(int fila, int columna) {//cada vez que toque un boton pa
         status.setText("Estatus: "+ battle.status());
     }
         // Timer para dar tiempo a ver el resultado antes de cambiar de turno
-        Timer pausa = new Timer(300, e -> {
+        Timer pausa = new Timer(100, e -> {
             if (battle.barcosVivosPlayer1 == 0 || battle.barcosVivosPlayer2 == 0) {
                 JOptionPane.showMessageDialog(null, "¡FIN DE LA PARTIDA!\n"+battle.getGanador());
                 menuPrincipal();
