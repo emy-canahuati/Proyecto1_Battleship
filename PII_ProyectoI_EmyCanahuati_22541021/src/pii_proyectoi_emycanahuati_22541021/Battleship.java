@@ -344,10 +344,18 @@ public class Battleship{
 
     public ImageIcon getIconBarcos(String ID){
         switch (ID) {
-            case "PA": iconoOG=new ImageIcon("src/Imagenes/portaaviones.png"); break;
-            case "AZ": iconoOG=new ImageIcon("src/Imagenes/acorazado.png"); break;
-            case "SM": iconoOG=new ImageIcon("src/Imagenes/submarino.png"); break;
-            case "DT": iconoOG=new ImageIcon("src/Imagenes/destructor.png"); break;
+            case "PA": 
+                iconoOG=new ImageIcon("src/Imagenes/portaaviones.png"); 
+                break;
+            case "AZ": 
+                iconoOG=new ImageIcon("src/Imagenes/acorazado.png"); 
+                break;
+            case "SM": 
+                iconoOG=new ImageIcon("src/Imagenes/submarino.png"); 
+                break;
+            case "DT": 
+                iconoOG=new ImageIcon("src/Imagenes/destructor.png"); 
+                break;
         }
         Image imagenRedimensionada =
                 iconoOG.getImage().getScaledInstance(105, 75, Image.SCALE_SMOOTH);
@@ -408,16 +416,18 @@ public class Battleship{
     public boolean tienePartidasRegistradas() {
         String[] partidas = getUltimasPartidas();
         if (partidas == null) return false;
-        for (String p : partidas) {
-            if (p != null && !p.trim().isEmpty()) return true;
+        for (String player : partidas) {
+            if (player != null && !player.trim().isEmpty()) 
+                return true;
         }
         return false;
     }
 
     public boolean tieneRankingActivo() {
         ArrayList<Player> ranking = getRanking();
-        for (Player p : ranking) {
-            if (p != null && p.getPuntos() > 0) return true;
+        for (Player player : ranking) {
+            if (player != null && player.getPuntos()>0) 
+                return true;
         }
         return false;
     }
@@ -428,9 +438,9 @@ public class Battleship{
 
     
     public void resetContadores() {
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 4; j++) {
-                contTipos[i][j] = 0;
+        for (int contador1 = 0; contador1< 2; contador1++) {
+            for (int contador2= 0; contador2< 4; contador2++) {
+                contTipos[contador1][contador2] = 0;
             }
         }
     }
@@ -440,7 +450,7 @@ public class Battleship{
         int jugadorIndex = turno - 1; 
         int limite = getLimiteTipo(tipo);
 
-        return contTipos[jugadorIndex][tipo] < limite;
+        return contTipos[jugadorIndex][tipo]<limite;
     }
 
     public void colocarBarcos(int contador1, int contador2, String ID) {
@@ -483,10 +493,10 @@ public class Battleship{
         
         turno(); //cambia el turno
         if (turno == 2) {
-            barcosDisponibles = dificultad.barcosDisponibles; //reinicia para J2
+            barcosDisponibles = dificultad.barcosDisponibles; //reinicia para player2
             return 1; 
         }
-        return 2;//Ambos listos
+        return 2;//ambos listos
     }
     
     public boolean isGameOver() {

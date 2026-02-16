@@ -639,22 +639,25 @@ private void colocacion(int fila, int colum) {//cada vez que se toque un boton p
             ubi_barcos[fila][colum].setIcon(new ImageIcon (imagenRedimensionada));// cambia la imagen
             contador_barcos.setText("Barcos Disponibles: " + battle.getBarcosDisp());// actualiza el jlabel
 
-            if (battle.getBarcosDisp() > 0) {//pregunta por el ID
-                Timer timerID = new Timer(200, event2 -> {
-                    pedirIDBarco();
-                });
-                timerID.setRepeats(false);
-                timerID.start();
-            } else {
-                battle.turno();//cambia de turno
-                if (battle.getTurno() == 2) {//jugador 1 acaba de terminar
+            int estado=battle.estadoColocacion();
+            switch(estado){
+                case 0: //pregunta por el ID
+                    Timer timerID = new Timer(200, event2 -> {
+                        pedirIDBarco();
+                    });
+                    timerID.setRepeats(false);
+                    timerID.start();
+                    break;
+                
+                case 1://jugador 1 acaba de terminar
                     JOptionPane.showMessageDialog(null, "¡Jugador 1 listo! Ahora Jugador 2");
                     ID=null;
                     panel_ColocarBarcos();// se resetea el JPanel
-                } else {
+                    break;
+                case 2:
                     JOptionPane.showMessageDialog(null, "¡Todos los barcos colocados! Iniciando batalla");//fin de la colocacion de barcos
                     panel_ColocarBombas();
-                }
+                    break;
             }
         } catch (Exception excepcion) {
             JOptionPane.showMessageDialog(null, excepcion.getMessage());
