@@ -68,7 +68,7 @@ public class MenuInicio extends JFrame{
         JPanel cuadro = (JPanel) contenedor.getComponent(0);
 
         menuInicio = new JLabel("Menú de Inicio", SwingConstants.CENTER);
-        menuInicio.setFont(fuente);
+        menuInicio.setFont(new Font("Arial", Font.BOLD, 30));
         menuInicio.setBounds(0, 30, 600, 50);
         cuadro.add(menuInicio);
 
