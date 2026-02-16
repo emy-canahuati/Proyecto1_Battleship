@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Battleship{
+
     protected ArrayList <Player> jugadores= new ArrayList<>();
     protected boolean [][] bombas_Player1;
     protected Barco [][] barcos_Player1;
@@ -26,17 +27,24 @@ public class Battleship{
     protected ImageIcon iconoOG;
     protected int barcosVivosPlayer1;
     protected int barcosVivosPlayer2;
+    protected int cont_PA, cont_AZ, cont_SM, cont_DT;
     protected Modo modo;
     protected Dificultad dificultad;
-    
+    protected int[][] contTipos = new int[2][4];
+
     enum Modo{
         TUTORIAL, ARCADE;
     }
     
     enum Dificultad{
-        EASY, NORMAL, EXPERT, GENIUS;
+        EASY(5), NORMAL(4), EXPERT(3), GENIUS(2);
+        public int barcosDisponibles;
+        
+        Dificultad(int barcosDisponibles){
+            this.barcosDisponibles=barcosDisponibles;
+        }
     }
-    
+
     public Battleship() {
         modo=Modo.TUTORIAL;
         dificultad= Dificultad.NORMAL;
@@ -48,24 +56,64 @@ public class Battleship{
         bombas_Player2 = new boolean[8][8];
         turno=1;
     }
-    public void retirada(){
+
+    public void nuevaPartida(){
+    resetearTableros();
+    resetContadores();
+    
+    turno= 1;
+    
+    barcosVivosPlayer1 = dificultad.barcosDisponibles;
+    barcosVivosPlayer2 = dificultad.barcosDisponibles;
+    barcosDisponibles = dificultad.barcosDisponibles;
+    }
+    
+    private void resetearTableros(){
         barcos_Player1= new Barco [8][8];
         barcos_Player2= new Barco [8][8];
         bombas_Player1 = new boolean[8][8];
         bombas_Player2 = new boolean[8][8];
-        if (turno==1){
-            jugadores.get(jugador1).setUltimasPartidas(jugadores.get(jugador2).getNombre(), jugadores.get(jugador1).getNombre(), modo.name(), "retirada");
-            jugadores.get(jugador2).setUltimasPartidas(jugadores.get(jugador2).getNombre(), jugadores.get(jugador1).getNombre(), modo.name(), "retirada");
-            jugadores.get(jugador2).setPuntos(3);
-            throw new IllegalArgumentException (jugadores.get(jugador1).getNombre()+" se ha retirado !El ganador es "+jugadores.get(jugador2).getNombre()+"!");
-        }else if (turno==2){
-            jugadores.get(jugador1).setUltimasPartidas(jugadores.get(jugador1).getNombre(), jugadores.get(jugador2).getNombre(), modo.name(), "retirada");
-            jugadores.get(jugador2).setUltimasPartidas(jugadores.get(jugador1).getNombre(), jugadores.get(jugador2).getNombre(), modo.name(), "retirada");
-            jugadores.get(jugador1).setPuntos(3);
-            throw new IllegalArgumentException (jugadores.get(jugador2).getNombre()+" se ha retirado !El ganador es "+jugadores.get(jugador1).getNombre()+"!");
+    }
+
+    private boolean Login(String nombre_login, String contraseña_login, int indexJugador){
+        if(jugadores==null || jugadores.isEmpty()){
+            throw new IllegalArgumentException("Error: No se han creado Players");
+        }
+        if (indexJugador<jugadores.size()){
+            if (jugadores.get(indexJugador)==null)
+                return Login(nombre_login, contraseña_login, indexJugador+1);
+
+            if (jugadores.get(indexJugador).getNombre().equals(nombre_login) &&
+                jugadores.get(indexJugador).getContraseña().equals(contraseña_login)){
+                this.jugador1=indexJugador;
+                return true;
+            }else{
+                return Login(nombre_login, contraseña_login, indexJugador+1);
+            }
+        }else{
+            throw new IllegalArgumentException("Error: Nombre de usuario y/o contraseña invalidos");
         }
     }
-    public boolean crearPlayers(String nombre_CrearPlayer, String contraseña){ //se crean los players, en el main se muestran diferentes mensajes dependiendo del numero que se retorne
+
+    private int getTipoIndex(String ID) {
+        switch (ID) {
+            case "PA": return 0;
+            case "AZ": return 1;
+            case "SM": return 2;
+            case "DT": return 3;
+            default: return -1;
+        }
+    }
+
+    private int getLimiteTipo(int tipo) {
+        if (tipo == 3) {
+            return (dificultad == Dificultad.EASY) ? 2 : 1;
+        } else {
+            return 1;
+        }
+    }
+
+    public boolean crearPlayers(String nombre_CrearPlayer, String contraseña){
         if (jugadores!=null || !jugadores.isEmpty()){
             for (Player jugador: jugadores){
                 if (jugador!=null){
@@ -78,35 +126,18 @@ public class Battleship{
         jugadores.add(jugador);
         return true;
     }
-    
+
     public boolean Login(String nombre_login, String contraseña_login){
         return Login(nombre_login, contraseña_login, 0);
     }
-    private boolean Login(String nombre_login, String contraseña_login, int indexJugador){ //valida que el usuario y contra sean correctas, en el main se haran diferentes acciones dependiendo de lo que retorne
-        if(jugadores==null || jugadores.isEmpty()){//revisa que se hayan creado players
-            throw new IllegalArgumentException("Error: No se han creado Players");
-        }
-        if (indexJugador<jugadores.size()){//revisa que los datos que se ingresaron sean de algun player
-            if (jugadores.get(indexJugador)==null)//si el espacio esta vacio que se lo salte
-                return Login(nombre_login, contraseña_login, indexJugador+1);
-            if (jugadores.get(indexJugador).getNombre().equals(nombre_login) && jugadores.get(indexJugador).getContraseña().equals(contraseña_login)){//si existe un jugador lo deja hacer login
-                this.jugador1=indexJugador;
-                return true;
-            }else{
-                return Login(nombre_login, contraseña_login, indexJugador+1);//sino se vuelve a repetir el ciclo
-            }   
-        }else{
-            throw new IllegalArgumentException("Error: Nombre de usuario y/o contraseña invalidos");
-        }
-    }
-    
+
     public boolean setJugador2(String player2){
         if (jugadores.size()>1){
             for (int contador=0;contador<jugadores.size();contador++){
                 if (jugadores.get(contador)!=null){
                     if (player2.equals(jugadores.get(contador).getNombre())){
-                    this.jugador2=contador;
-                    return true;
+                        this.jugador2=contador;
+                        return true;
                     }
                 }
             }
@@ -115,170 +146,26 @@ public class Battleship{
             throw new IllegalArgumentException("Error: Debe crear otro Player. Battleship se juego con 2 players.");
         }
     }
-    
-    public String getJugadorNom(){
-        return (turno==1)? jugadores.get(jugador1).getNombre():jugadores.get(jugador2).getNombre();
-    }
-    
-    public void colocarBarcos(int contador1, int contador2, String ID){
-        if(turno==1){
-            if (barcos_Player1[contador1][contador2]!=null && barcos_Player1[contador1][contador2].isSeleccionado()){
-                throw new IllegalArgumentException ("No puede colocar dos barcos en la misma posición.");
-            }
-            else if (barcos_Player1[contador1][contador2]==null){
-                barcos_Player1[contador1][contador2]= new Barco(ID);
-                barcos_Player1[contador1][contador2].setSeleccionado(true);
-                barcosDisponibles-=1;
-            }
-        }else if (turno==2){
-            if (barcos_Player2[contador1][contador2]!=null && barcos_Player2[contador1][contador2].isSeleccionado()){
-                throw new IllegalArgumentException ("No puede colocar dos barcos en la misma posición.");
-            }
-            else if (barcos_Player2[contador1][contador2]==null){
-                barcos_Player2[contador1][contador2]= new Barco(ID);
-                barcos_Player2[contador1][contador2].setSeleccionado(true);
-                barcosDisponibles-=1;
-                
-            }
-        }
-    }
-       
-    public void colocarBombas(int contador1, int contador2){
-        if(turno==1){
-            bombas_Player1[contador1][contador2]=true;
-        }else if (turno==2){
-            bombas_Player2[contador1][contador2]=true;
-        }
-    }
-    public void turno(){
-        if (turno==1){
-            turno=2;
-        }else{
-            turno=1;
-        }
-    }
-    
-    public int getTurno(){
-        return turno;
-    }
-    
-    public void barcosDisponibles(){
-        switch (dificultad) {
-            case EASY:
-                barcosDisponibles=5;
-                barcosVivosPlayer1=5;
-                barcosVivosPlayer2=5;
-                break;
-            case NORMAL:
-                barcosDisponibles=4;
-                barcosVivosPlayer1=4;
-                barcosVivosPlayer2=4;
-                break;
-            case EXPERT:
-                barcosDisponibles=2;
-                barcosVivosPlayer1=2;
-                barcosVivosPlayer2=2;
-                break;
-            case GENIUS:
-                barcosDisponibles=1;
-                barcosVivosPlayer1=1;
-                barcosVivosPlayer2=1;
-                break;
-            default:
-                break;
-        }
-    }
-    
-    public int getBarcosDisp(){
-        return barcosDisponibles;
-    }
-    
-    public String getGanador(){
-        String mensaje="";
-        if (barcosVivosPlayer2==0){
-            jugadores.get(jugador1).setUltimasPartidas(jugadores.get(jugador1).getNombre(), jugadores.get(jugador2).getNombre(), modo.name(), "hundimiento");
-            jugadores.get(jugador2).setUltimasPartidas(jugadores.get(jugador1).getNombre(), jugadores.get(jugador2).getNombre(), modo.name(), "hundimiento");
-            mensaje="¡El ganador es "+jugadores.get(jugador1).getNombre()+"!";
-            jugadores.get(jugador1).setPuntos(3);
-        }else if(barcosVivosPlayer1==0){
-            jugadores.get(jugador1).setUltimasPartidas(jugadores.get(jugador2).getNombre(), jugadores.get(jugador1).getNombre(), modo.name(), "hundimiento");
-            jugadores.get(jugador2).setUltimasPartidas(jugadores.get(jugador2).getNombre(), jugadores.get(jugador1).getNombre(), modo.name(), "hundimiento");
-            mensaje="¡El ganador es "+jugadores.get(jugador2).getNombre()+"!";
-            jugadores.get(jugador2).setPuntos(3);
-        }
-        return mensaje;
-    }
-    
-    public boolean compararPosiciones(int fila, int columna){
-        if(turno==1){
-            if (barcos_Player2[fila][columna]!=null && barcos_Player2[fila][columna].isSeleccionado()){
-                barcos_Player2[fila][columna].restarCant_bombas();
-                if (barcos_Player2[fila][columna].getCant_bombas()==0){// si el barco ya no tiene vidas
-                    if (barcosVivosPlayer2!=0){//si el player 2 aun tiene barcos vivos
-                        barcosVivosPlayer2--;//se le resta un barco
-                        barcos_Player2[fila][columna]=null;//se quita el barco de la posicion en el tablero
-                        throw new IllegalArgumentException("Se hundio el "+barcos_Player2[fila][columna].getNombre()+" de "+jugadores.get(jugador2).getNombre());
-                    }
-                }else{
-                    return true;
-                }
-            }else
-                return false;
-        }else if (turno==2){
-            if (barcos_Player1[fila][columna]!=null && barcos_Player1[fila][columna].isSeleccionado()){
-                barcos_Player1[fila][columna].restarCant_bombas();
-                if (barcos_Player1[fila][columna].getCant_bombas()==0){
-                    if (barcosVivosPlayer1!=0){
-                        barcosVivosPlayer1--;
-                        barcos_Player1[fila][columna]=null;
-                        throw new IllegalArgumentException("Se hundio el "+barcos_Player1[fila][columna].getNombre()+" de "+jugadores.get(jugador1).getNombre());
-                    }
-                }else
-                    return true;
-            }else
-                return false;
-        }
-        return false;
-    }
-    
 
-    public void resetearTablero(){
-        if (turno==1){
-            List <Barco> lista= new ArrayList<>(); //el arreglo de Barcos de guarda en una lista
-            for (Barco[] fila:barcos_Player2){//por cada fila en el arreglo
-                for (Barco barco: fila){//por cada barco en una fila
-                    lista.add(barco);
-                }
-            }
-            
-            Collections.shuffle(lista);//shuffle de la lista
-            
-            int index=0;
-            for (int contador1=0;contador1<8;contador1++){
-                for(int contador2=0; contador2<8;contador2++){
-                    barcos_Player2[contador1][contador2]=lista.get(index++);
-                }
-            }  
-        }
-        if(turno==2){
-            List <Barco> lista= new ArrayList<>(); //el arreglo de Barcos de guarda en una lista
-            for (Barco[] fila:barcos_Player1){
-                for (Barco barco: fila){
-                    lista.add(barco);
-                }
-            }
-            
-            Collections.shuffle(lista);//shuffle de la lista
-            
-            int index=0;
-            for (int contador1=0;contador1<8;contador1++){
-                for(int contador2=0; contador2<8;contador2++){//los datos reordenados de la lista se ingresan al arreglo
-                    barcos_Player1[contador1][contador2]=lista.get(index++);
-                }
-            }
+    public void modificarDatos(String nombre, String contraseña, int indicador){
+        switch (indicador){
+            case 1:
+                jugadores.get(jugador1).setContraseña(contraseña);
+                break;
+            case 2:
+                jugadores.get(jugador1).setNombre(nombre);
+                break;
+            case 3:
+                jugadores.get(jugador1).setNombre(nombre);
+                jugadores.get(jugador1).setContraseña(contraseña);
+                break;
         }
     }
-    
+
+    public void eliminarCuenta(){
+        jugadores.set(jugador1, null);
+    }
+
     public void setDificultad(String dificultad){
         this.dificultad=Dificultad.valueOf(dificultad);
         barcosDisponibles();
@@ -287,29 +174,168 @@ public class Battleship{
     public void setModo(String modo){
         this.modo=Modo.valueOf(modo);
     }
-    
-    public ImageIcon getIconBarcos(String ID){
-        switch (ID) {
-            case "PA":
-                iconoOG=new ImageIcon("src/Imagenes/portaaviones.png");
-                break;
-            case "AZ":
-                iconoOG=new ImageIcon("src/Imagenes/acorazado.png");
-                break;
-            case "SM":
-                iconoOG=new ImageIcon("src/Imagenes/submarino.png");
-                break;
-            case "DT":
-                iconoOG=new ImageIcon("src/Imagenes/destructor.png");
-                break;
-            default:
-                break;
-        }
-        Image imagenRedimensionada = iconoOG.getImage().getScaledInstance(105, 75, Image.SCALE_SMOOTH);
-        ImageIcon icono = new ImageIcon(imagenRedimensionada);
-        return icono;
+
+    public void barcosDisponibles(){
+        barcosDisponibles=dificultad.barcosDisponibles;
+        barcosVivosPlayer1=dificultad.barcosDisponibles;
+        barcosVivosPlayer2=dificultad.barcosDisponibles;
     }
     
+    public int getBarcosDisp(){
+        return barcosDisponibles;
+    }
+
+    public void turno(){
+        turno= (turno==1)? 2:1;
+    }
+
+    public int getTurno(){
+        return turno;
+    }
+
+    public String getJugadorNom(){
+        return (turno==1)? jugadores.get(jugador1).getNombre() : jugadores.get(jugador2).getNombre();
+    }
+
+    public String getJugadorLogged(){
+    return jugadores.get(jugador1).getNombre();
+}
+
+    public String getJugadorLoggedContra(){
+        return jugadores.get(jugador1).getContraseña();
+    }
+
+    
+    public String status(){
+        return (turno==1)? jugadores.get(jugador2).getNombre()+" tiene "+barcosVivosPlayer2+" naves": jugadores.get(jugador1).getNombre()+" tiene "+barcosVivosPlayer1+" naves";
+    }
+
+    public void colocarBombas(int contador1, int contador2){
+        if(turno==1){
+            bombas_Player1[contador1][contador2]=true;
+        }else{
+            bombas_Player2[contador1][contador2]=true;
+        }
+    }
+
+    public boolean compararPosiciones(int fila, int columna){
+        String mensaje="";
+        if(turno==1){
+            if (barcos_Player2[fila][columna]!=null &&
+                barcos_Player2[fila][columna].isSeleccionado()){
+
+                barcos_Player2[fila][columna].restarCant_bombas();
+
+                if (barcos_Player2[fila][columna].getCant_bombas()==0){
+                    if (barcosVivosPlayer2!=0){
+                        barcosVivosPlayer2--;
+                        mensaje="Se hundio el "+barcos_Player2[fila][columna].getNombre()+" de "+jugadores.get(jugador2).getNombre();
+                        barcos_Player2[fila][columna]=null;
+                    }
+                    throw new IllegalArgumentException(mensaje);
+                }else{
+                    return true;
+                }
+            }else
+                return false;
+        }else{
+            if (barcos_Player1[fila][columna]!=null &&
+                barcos_Player1[fila][columna].isSeleccionado()){
+
+                barcos_Player1[fila][columna].restarCant_bombas();
+
+                if (barcos_Player1[fila][columna].getCant_bombas()==0){
+                    if (barcosVivosPlayer1!=0){
+                        barcosVivosPlayer1--;
+                        mensaje="Se hundio el "+barcos_Player1[fila][columna].getNombre()+" de "+jugadores.get(jugador1).getNombre();
+                        barcos_Player1[fila][columna]=null;
+                    }
+                    throw new IllegalArgumentException(mensaje);
+                }else
+                    return true;
+            }else
+                return false;
+        }
+    }
+
+    public String getGanador(){
+        String mensaje="";
+        if (barcosVivosPlayer2==0){
+            setUltimasPartidas(jugadores.get(jugador1).getNombre(), jugadores.get(jugador2).getNombre(), "hundimiento");
+            jugadores.get(jugador1).setPuntos(3);
+            mensaje="¡El ganador es "+jugadores.get(jugador1).getNombre()+"!";
+        }else if(barcosVivosPlayer1==0){
+            setUltimasPartidas(jugadores.get(jugador2).getNombre(), jugadores.get(jugador1).getNombre(), "hundimiento");
+            jugadores.get(jugador2).setPuntos(3);
+            mensaje="¡El ganador es "+jugadores.get(jugador2).getNombre()+"!";
+        }
+        return mensaje;
+    }
+
+    public void setUltimasPartidas(String ganador, String perdedor, String fin_partida){
+        jugadores.get(jugador1).setUltimasPartidas(ganador, perdedor, modo.name(), fin_partida);
+        jugadores.get(jugador2).setUltimasPartidas(ganador, perdedor, modo.name(), fin_partida);
+
+    }
+    
+    public void retirada(){
+        if (turno==1){
+            setUltimasPartidas(jugadores.get(jugador2).getNombre(), jugadores.get(jugador1).getNombre(), "retirada");
+            jugadores.get(jugador2).setPuntos(3);
+            throw new IllegalArgumentException(jugadores.get(jugador1).getNombre()+" se ha retirado !El ganador es "+ jugadores.get(jugador2).getNombre()+"!");
+        }else{
+            setUltimasPartidas(jugadores.get(jugador1).getNombre(), jugadores.get(jugador2).getNombre(), "retirada");
+            jugadores.get(jugador1).setPuntos(3);
+            throw new IllegalArgumentException( jugadores.get(jugador2).getNombre()+" se ha retirado !El ganador es "+jugadores.get(jugador1).getNombre()+"!");
+        }
+    }
+
+    public void shuffleTablero(){
+        if (turno==1){
+            List <Barco> lista= new ArrayList<>();
+            for (Barco[] fila:barcos_Player2){
+                for (Barco barco: fila){
+                    lista.add(barco);
+                }
+            }
+            Collections.shuffle(lista);
+
+            int index=0;
+            for (int i=0;i<8;i++){
+                for(int j=0;j<8;j++){
+                    barcos_Player2[i][j]=lista.get(index++);
+                }
+            }  
+        }else{
+            List <Barco> lista= new ArrayList<>();
+            for (Barco[] fila:barcos_Player1){
+                for (Barco barco: fila){
+                    lista.add(barco);
+                }
+            }
+            Collections.shuffle(lista);
+
+            int index=0;
+            for (int i=0;i<8;i++){
+                for(int j=0;j<8;j++){
+                    barcos_Player1[i][j]=lista.get(index++);
+                }
+            }
+        }
+    }
+
+    public ImageIcon getIconBarcos(String ID){
+        switch (ID) {
+            case "PA": iconoOG=new ImageIcon("src/Imagenes/portaaviones.png"); break;
+            case "AZ": iconoOG=new ImageIcon("src/Imagenes/acorazado.png"); break;
+            case "SM": iconoOG=new ImageIcon("src/Imagenes/submarino.png"); break;
+            case "DT": iconoOG=new ImageIcon("src/Imagenes/destructor.png"); break;
+        }
+        Image imagenRedimensionada =
+                iconoOG.getImage().getScaledInstance(105, 75, Image.SCALE_SMOOTH);
+        return new ImageIcon(imagenRedimensionada);
+    }
+
     public ImageIcon TableroBarcos(int fila, int col){
         if (modo.name().equals("TUTORIAL")) {
             if (turno == 1 && barcos_Player2[fila][col] != null) {
@@ -324,61 +350,78 @@ public class Battleship{
         }
         return iconoOG;
     }
-    
-    public String status(){
-        return (turno==1)? jugadores.get(jugador2).getNombre()+" tiene "+barcosVivosPlayer2+" naves":jugadores.get(jugador1).getNombre()+" tiene "+barcosVivosPlayer1+" naves";
-    }
-    
-    public String getJugadorLogged(){
-        return jugadores.get(jugador1).getNombre();
-    }
-    
-    public String getJugadorLoggedContra(){
-        return jugadores.get(jugador1).getContraseña();
-    }
-    
-    public void modificarDatos(String nombre, String contraseña, int indicador /*si es 1, solo nombre se cambia, si es 2 solo contra y si es 3 ambas*/){
-        switch (indicador){
-            case 1:
-                jugadores.get(jugador1).setContraseña(contraseña);
-                break;
-            case 2:
-                jugadores.get(jugador1).setNombre(nombre);
-                break;
-            case 3:
-                jugadores.get(jugador1).setNombre(nombre);
-                jugadores.get(jugador1).setContraseña(contraseña);
-                break;
-            default:
-                break;
-        }
-    }
-    
-    public void eliminarCuenta(){
-        jugadores.set(jugador1, null);
-    }
-    
-    public String[] getUltimasPartidas(){
-        return jugadores.get(jugador1).getUltimasPartidas();
-    }
-    
+
     public ArrayList<Player> getRanking(){
         ArrayList<Player> ranking= new ArrayList <>(jugadores);
         Player guardarDato;
-        for (int contador1=0;contador1<(ranking.size()-1);contador1++){
-            for (int contador2=0;contador2<(ranking.size()-1);contador2++){
-                if(ranking.get(contador2)!=null){
-                    if (ranking.get(contador2).getPuntos()<ranking.get(contador2+1).getPuntos()){
-                        guardarDato=ranking.get(contador2);
-                        ranking.set(contador2, ranking.get(contador2+1));
-                        ranking.set(contador2+1,guardarDato);
+
+        for (int i=0;i<(ranking.size()-1);i++){
+            for (int j=0;j<(ranking.size()-1);j++){
+                if(ranking.get(j)!=null){
+                    if (ranking.get(j).getPuntos()<ranking.get(j+1).getPuntos()){
+                        guardarDato=ranking.get(j);
+                        ranking.set(j, ranking.get(j+1));
+                        ranking.set(j+1,guardarDato);
                     }
                 }
-                
             }
         }
-       return ranking; 
+        return ranking; 
     }
+
+    public String[] getUltimasPartidas(){
+        return jugadores.get(jugador1).getUltimasPartidas();
+    }
+
     
-    
+    public void resetContadores() {
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 4; j++) {
+                contTipos[i][j] = 0;
+            }
+        }
+    }
+
+    public boolean puedeColocarTipo(String ID) {
+        int tipo = getTipoIndex(ID);
+        int jugadorIndex = turno - 1; 
+        int limite = getLimiteTipo(tipo);
+
+        return contTipos[jugadorIndex][tipo] < limite;
+    }
+
+    public void colocarBarcos(int contador1, int contador2, String ID) {
+        if (!puedeColocarTipo(ID)) {
+            throw new IllegalArgumentException(
+                "No puedes colocar otro barco de tipo " + ID+". Ingrese otro tipo de barco.");
+        }
+
+        if (turno == 1) {
+            if (barcos_Player1[contador1][contador2] != null &&
+                barcos_Player1[contador1][contador2].isSeleccionado()) {
+
+                throw new IllegalArgumentException("No puede colocar dos barcos en la misma posición.");
+
+            } else if (barcos_Player1[contador1][contador2] == null) {
+
+                barcos_Player1[contador1][contador2] = new Barco(ID);
+                barcos_Player1[contador1][contador2].setSeleccionado(true);
+                barcosDisponibles -= 1;
+                contTipos[0][getTipoIndex(ID)]++;
+            }
+        } else {
+            if (barcos_Player2[contador1][contador2] != null &&
+                barcos_Player2[contador1][contador2].isSeleccionado()) {
+
+                throw new IllegalArgumentException("No puede colocar dos barcos en la misma posición.");
+
+            } else if (barcos_Player2[contador1][contador2] == null) {
+
+                barcos_Player2[contador1][contador2] = new Barco(ID);
+                barcos_Player2[contador1][contador2].setSeleccionado(true);
+                barcosDisponibles -= 1;
+                contTipos[1][getTipoIndex(ID)]++;
+            }
+        }
+    }
 }

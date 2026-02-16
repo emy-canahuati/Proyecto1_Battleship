@@ -268,6 +268,8 @@ public class MenuPrincipal extends JFrame {
         ingresar.addActionListener(ev -> {
             try{
                 if (battle.setJugador2(nom_Player2.getText())) {
+                    battle.nuevaPartida();
+                    ID=null;
                     JOptionPane.showMessageDialog(null, "Player 2 Ingresado");
                     panel_ColocarBarcos();
                 }else
@@ -431,37 +433,33 @@ public class MenuPrincipal extends JFrame {
     ultimos_juegos.setBounds(50, 120, 500, 50);
     ultimos_juegos.addActionListener(ev -> {
         JDialog juegos = new JDialog(this, "Ultimas Partidas", true);
-        juegos.setSize(400, 500);
+        juegos.setSize(640, 500);
         juegos.setLayout(null);
         juegos.setLocationRelativeTo(null);
 
         tituloJuegos = new JLabel("ULTIMAS PARTIDAS", SwingConstants.CENTER);
         tituloJuegos.setFont(new Font("Arial", Font.BOLD, 20));
-        tituloJuegos.setBounds(0, 20, 400, 30);
+        tituloJuegos.setBounds(0, 20, 600, 30);
         juegos.add(tituloJuegos);
 
         String[] listaPartidas = battle.getUltimasPartidas();
-        if (listaPartidas==null){
-            JLabel etiListaVacia =new JLabel("Aun no ha jugado una partida.");
-            juegos.add(etiListaVacia);
-        }else{
-            int posiciony=70;
-            int contadorPosicion=1;
-            for(int indexJuegos=9; indexJuegos>=0;indexJuegos--){
-                if (listaPartidas[indexJuegos]!=null){
-                    String texto = (contadorPosicion) + ". " + listaPartidas[indexJuegos];
-                    JLabel etiPartida = new JLabel(texto);
-                    etiPartida.setBounds(50, posiciony, 300, 25);
-                    juegos.add(etiPartida);
-                    posiciony += 30;
-                }else
-                    break;
+        
+        int posiciony=70;
+        int contadorPosicion=1;
+        for(int indexJuegos=9; indexJuegos>=0;indexJuegos--){
+            if (!listaPartidas[indexJuegos].equals("")){
+                String texto = (contadorPosicion) + ". " + listaPartidas[indexJuegos];
+                JLabel etiPartida = new JLabel(texto);
+                etiPartida.setFont(new Font("Arial", Font.PLAIN, 17));
+                etiPartida.setBounds(20, posiciony, 600, 25);
+                juegos.add(etiPartida);
+                posiciony += 30;
+                contadorPosicion++;
             }
         }
-        
-
+ 
         btnCerrarPartidas = new JButton("Cerrar");
-        btnCerrarPartidas.setBounds(150, 400, 100, 30);
+        btnCerrarPartidas.setBounds(150, 400, 600, 30);
         btnCerrarPartidas.addActionListener(e -> juegos.dispose());
         juegos.add(btnCerrarPartidas);
 
@@ -485,16 +483,17 @@ public class MenuPrincipal extends JFrame {
 
         ArrayList<Player> listaRanking = battle.getRanking();
         
-        int indexranking=0;
+        int indexRanking=0;
         int posiciony=70;
         for(Player jugador: listaRanking){
             if (jugador!=null){
-                String texto = (indexranking + 1) + ". " + jugador.getNombre()+ " - Puntos: " + jugador.getPuntos();
+                String texto = (indexRanking + 1) + ". " + jugador.getNombre()+ " - Puntos: " + jugador.getPuntos();
                 JLabel etiJugador = new JLabel(texto);
                 etiJugador.setBounds(50, posiciony, 300, 25);
-                etiJugador.setFont(fuente);
+                etiJugador.setFont(new Font("Arial", Font.PLAIN, 17));
                 ranking_jugadores.add(etiJugador);
                 posiciony += 30;
+                indexRanking++;
             }
             
         }
@@ -524,7 +523,8 @@ public class MenuPrincipal extends JFrame {
     JPanel contenedor = crearContenedorConFondo(1100, 850);
     JPanel cuadro = (JPanel) contenedor.getComponent(0);
     battle.barcosDisponibles(); // Setea contador inicial
-
+    battle.resetContadores();
+    
     tituloBattle = new JLabel("CONFIGURACIÓN DE FLOTA", SwingConstants.CENTER);
     tituloBattle.setFont(new Font("Arial", Font.BOLD, 30));
     tituloBattle.setBounds(0, 20, 1100, 40);
@@ -547,9 +547,9 @@ public class MenuPrincipal extends JFrame {
     cuadro.add(iniciar);
 
     // Panel de la cuadrícula
-    panelCuadricula = new JPanel(new GridLayout(8, 8, 2, 2));
+    panelCuadricula = new JPanel(new GridLayout(8, 8));
     panelCuadricula.setBackground(Color.LIGHT_GRAY);
-    panelCuadricula.setBounds(50, 190, 1000, 600);
+    panelCuadricula.setBounds(50, 190, 990, 600);
 
     ubi_barcos = new JButton[8][8];
     for (int fila = 0; fila < 8; fila++) {
@@ -590,8 +590,13 @@ private void pedirIDBarco() {
     do {
         String idIngresado = JOptionPane.showInputDialog("PA = Portaaviones (5)\nAZ = Acorazado (4)\nSM = Submarino (3)\nDT = Destructor (2)\n\nIngrese el Código:");
         if (idIngresado != null && (idIngresado.equals("PA") || idIngresado.equals("AZ") || idIngresado.equals("SM") || idIngresado.equals("DT"))) {
-            ID = idIngresado;
-            validacion=false;
+            if (battle.puedeColocarTipo(idIngresado)) {
+                ID = idIngresado;
+                validacion=false;
+            }else{
+                JOptionPane.showMessageDialog(null, "No puedes colocar otro barco de tipo "+idIngresado);
+                validacion = true;
+            }
         } else if (idIngresado != null) {
             JOptionPane.showMessageDialog(null, "Código inválido. Debe ingresar PA, AZ, SM o DT");
             validacion=true;
@@ -605,7 +610,8 @@ private void colocacion(int fila, int colum) {//cada vez que se toque un boton p
     if (battle.getBarcosDisp() > 0) {
         try {
             battle.colocarBarcos(fila, colum, ID);//guarda las posiciones de los barcos
-            ubi_barcos[fila][colum].setIcon(battle.getIconBarcos(ID));// cambia la imagen
+            imagenRedimensionada = battle.getIconBarcos(ID).getImage().getScaledInstance(120, 70, Image.SCALE_SMOOTH);
+            ubi_barcos[fila][colum].setIcon(new ImageIcon (imagenRedimensionada));// cambia la imagen
             contador_barcos.setText("Barcos Disponibles: " + battle.getBarcosDisp());// actualiza el jlabel
 
             if (battle.getBarcosDisp() > 0) {//pregunta por el ID
@@ -617,7 +623,7 @@ private void colocacion(int fila, int colum) {//cada vez que se toque un boton p
             } else {
                 battle.turno();//cambia de turno
                 if (battle.getTurno() == 2) {//jugador 1 acaba de terminar
-                    JOptionPane.showMessageDialog(null, "¡Jugador 1 listo! Ahora Jugador 2.");
+                    JOptionPane.showMessageDialog(null, "¡Jugador 1 listo! Ahora Jugador 2");
                     ID=null;
                     panel_ColocarBarcos();// se resetea el JPanel
                 } else {
@@ -703,33 +709,38 @@ private void bombardear(int fila, int columna) {//cada vez que toque un boton pa
         if (battle.compararPosiciones(fila, columna)) {//revisa si hay un barco en esta posicion
             // logica si le pega a un barco
             if (battle.getTurno() == 1) {
-                JOptionPane.showMessageDialog(null, "¡DIRECTO! Has golpeado un " + battle.barcos_Player2[fila][columna].getNombre()+"\nVidas: "+battle.barcos_Player2[fila][columna].getCant_bombas());
                 imagenRedimensionada = battle.barcos_Player2[fila][columna].getIconHits().getImage().getScaledInstance(120, 75, Image.SCALE_SMOOTH);
+                ubi_bombas[fila][columna].setIcon(new ImageIcon(imagenRedimensionada));
+                JOptionPane.showMessageDialog(null, "¡DIRECTO! Has golpeado un " + battle.barcos_Player2[fila][columna].getNombre()+"\nVidas: "+battle.barcos_Player2[fila][columna].getCant_bombas());
             } else {
-                JOptionPane.showMessageDialog(null, "¡DIRECTO! Has golpeado un " + battle.barcos_Player1[fila][columna].getNombre()+"\nVidas: "+battle.barcos_Player1[fila][columna].getCant_bombas());
                 imagenRedimensionada = battle.barcos_Player1[fila][columna].getIconHits().getImage().getScaledInstance(120, 75, Image.SCALE_SMOOTH);
+                ubi_bombas[fila][columna].setIcon(new ImageIcon(imagenRedimensionada));
+                JOptionPane.showMessageDialog(null, "¡DIRECTO! Has golpeado un " + battle.barcos_Player1[fila][columna].getNombre()+"\nVidas: "+battle.barcos_Player1[fila][columna].getCant_bombas());
             }
-            battle.resetearTablero();
+            battle.shuffleTablero();
         } else {
             //logica si fallo
             iconoOG = new ImageIcon("src/Imagenes/tiro_fallido.png");
             imagenRedimensionada = iconoOG.getImage().getScaledInstance(120, 75, Image.SCALE_SMOOTH);
-            JOptionPane.showMessageDialog(null, "Agua. Intenta de nuevo en el próximo turno");
+            ubi_bombas[fila][columna].setIcon(new ImageIcon(imagenRedimensionada));
+            JOptionPane.showMessageDialog(null, "Golpeaste Agua. Intenta de nuevo en el próximo turno");
         }
 
     } catch (Exception excepcion) {
-        // Maneja el caso de barco hundido (Exception lanzada desde tu lógica de Battle)
+        //si se hundio
+        iconoOG = new ImageIcon("src/Imagenes/tiro_fallido.png");
+        imagenRedimensionada = iconoOG.getImage().getScaledInstance(120, 75, Image.SCALE_SMOOTH);
+        ubi_bombas[fila][columna].setIcon(new ImageIcon(imagenRedimensionada));
         JOptionPane.showMessageDialog(null, "¡HUNDIDO! " + excepcion.getMessage());
         status.setText("Estatus: "+ battle.status());
     }
-    //actualizar icono visualmente
-        ubi_bombas[fila][columna].setIcon(new ImageIcon(imagenRedimensionada));
         
         // Bloquear tablero para evitar clics multiples
-        for(JButton[] filas : ubi_bombas) for(JButton b : filas) b.setEnabled(false);
-
+        
         // Timer para dar tiempo a ver el resultado antes de cambiar de turno
-        Timer pausa = new Timer(1500, e -> {
+        Timer pausa = new Timer(500, e -> {
+            
+           
             if (battle.barcosVivosPlayer1 == 0 || battle.barcosVivosPlayer2 == 0) {
                 JOptionPane.showMessageDialog(null, "¡FIN DE LA PARTIDA!\n"+battle.getGanador());
                 menuPrincipal();
