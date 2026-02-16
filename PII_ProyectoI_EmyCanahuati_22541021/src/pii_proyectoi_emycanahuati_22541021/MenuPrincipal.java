@@ -61,11 +61,11 @@ public class MenuPrincipal extends JFrame {
     protected JLabel[] lblJugadoresRanking;
     protected JButton btnCerrarRanking;
 
-    // --- Componentes Panel Colocar Barcos ---
+    //componentes Panel Colocar Barcos
     protected JPanel panelCuadricula;
     protected JButton[][] ubi_barcos;
 
-    // --- Componentes Panel Colocar Bombas ---
+    //componentes Panel Colocar Bombas
     protected JPanel panelTableroBombas;
     protected JButton[][] ubi_bombas;
     protected JLabel lblEstatusTitulo, lblLeyenda;
@@ -458,32 +458,22 @@ public class MenuPrincipal extends JFrame {
         tituloJuegos.setBounds(0, 20, 600, 30);
         juegos.add(tituloJuegos);
 
-        String[] listaPartidas = battle.getUltimasPartidas();
-        boolean hayPartidas = false;
-        for (String partida : listaPartidas) {
-            if (!partida.equals("")) {
-                hayPartidas = true;
-                break;
-            }
-        }
-        int posiciony = 70;
-        int contadorPosicion = 1;
-
-        if (!hayPartidas) {
+        if (!battle.tienePartidasRegistradas()) {
             JLabel mensaje = new JLabel("No hay registro de partidas");
             mensaje.setFont(new Font("Arial", Font.PLAIN, 17));
             mensaje.setBounds(20, 70, 400, 25);
             juegos.add(mensaje);
         } else {
-            for (int indexJuegos = 0; indexJuegos<10; indexJuegos++) {
-                if (!listaPartidas[indexJuegos].equals("")) {
-                    String texto = (contadorPosicion) + ". " + listaPartidas[indexJuegos];
+            String[] listaPartidas = battle.getUltimasPartidas();
+            int posiciony = 70;
+            for (int indexJuegos = 0; indexJuegos<listaPartidas.length; indexJuegos++) {
+                if (!listaPartidas[indexJuegos].equals("") && !listaPartidas[indexJuegos].isEmpty() && listaPartidas[indexJuegos]!=null) {
+                    String texto = (indexJuegos+1) + ". " + listaPartidas[indexJuegos];
                     JLabel etiPartida = new JLabel(texto);
                     etiPartida.setFont(new Font("Arial", Font.PLAIN, 17));
                     etiPartida.setBounds(20, posiciony, 600, 25);
                     juegos.add(etiPartida);
                     posiciony += 30;
-                    contadorPosicion++;
                 }
             }
         }
@@ -510,22 +500,14 @@ public class MenuPrincipal extends JFrame {
         tituloRanking.setFont(new Font("Arial", Font.BOLD, 20));
         tituloRanking.setBounds(0, 20, 500, 30);
         ranking_jugadores.add(tituloRanking);
-
-        ArrayList<Player> listaRanking = battle.getRanking();
         
-        boolean hayPuntos = false;
-        for (Player jugador : listaRanking) {
-            if (jugador != null && jugador.getPuntos() > 0) {
-                hayPuntos = true;
-                break;
-            }
-        }
-        if (!hayPuntos) {
+        if (!battle.tieneRankingActivo()) {
             JLabel mensaje = new JLabel("No hay suficientes datos para realizar el ranking");
             mensaje.setBounds(50, 70, 400, 25);
             mensaje.setFont(new Font("Arial", Font.PLAIN, 17));
             ranking_jugadores.add(mensaje);
         } else {
+            ArrayList<Player> listaRanking = battle.getRanking();
             int indexRanking = 0;
             int posiciony = 70;
             for (Player jugador : listaRanking) {
@@ -750,15 +732,11 @@ private void bombardear(int fila, int columna) {//cada vez que toque un boton pa
     try {
         if (battle.compararPosiciones(fila, columna)) {//revisa si hay un barco en esta posicion
             // logica si le pega a un barco
-            if (battle.getTurno() == 1) {
-                imagenRedimensionada = battle.barcos_Player2[fila][columna].getIconHits().getImage().getScaledInstance(120, 75, Image.SCALE_SMOOTH);
-                ubi_bombas[fila][columna].setIcon(new ImageIcon(imagenRedimensionada));
-                JOptionPane.showMessageDialog(null, "¡DIRECTO! Has golpeado un " + battle.barcos_Player2[fila][columna].getNombre()+"\nVidas: "+battle.barcos_Player2[fila][columna].getCant_bombas());
-            } else {
-                imagenRedimensionada = battle.barcos_Player1[fila][columna].getIconHits().getImage().getScaledInstance(120, 75, Image.SCALE_SMOOTH);
-                ubi_bombas[fila][columna].setIcon(new ImageIcon(imagenRedimensionada));
-                JOptionPane.showMessageDialog(null, "¡DIRECTO! Has golpeado un " + battle.barcos_Player1[fila][columna].getNombre()+"\nVidas: "+battle.barcos_Player1[fila][columna].getCant_bombas());
-            }
+            ImageIcon hitIcon = battle.getIconoGolpe(fila, columna);
+            Image img = hitIcon.getImage().getScaledInstance(120, 75, Image.SCALE_SMOOTH);
+            ubi_bombas[fila][columna].setIcon(new ImageIcon(img));
+            
+            JOptionPane.showMessageDialog(null, "¡DIRECTO! Golpeaste un " + battle.getNombreBarcoEn(fila, columna) +"\nVidas: " + battle.getVidasBarcoEn(fila, columna));
             battle.shuffleTablero();
         } else {
             //logica si fallo
@@ -778,7 +756,7 @@ private void bombardear(int fila, int columna) {//cada vez que toque un boton pa
     }
         // Timer para dar tiempo a ver el resultado antes de cambiar de turno
         Timer pausa = new Timer(100, e -> {
-            if (battle.barcosVivosPlayer1 == 0 || battle.barcosVivosPlayer2 == 0) {
+            if (battle.isGameOver()) {
                 JOptionPane.showMessageDialog(null, "¡FIN DE LA PARTIDA!\n"+battle.getGanador());
                 menuPrincipal();
             } else {

@@ -163,6 +163,23 @@ public class Battleship{
         }
     }
 
+    public int validarYModificarDatos(String nuevoNombre, String nuevaContra) {
+        boolean nombreVacio = nuevoNombre.trim().isEmpty();
+        boolean contraVacia = nuevaContra.trim().isEmpty();
+
+        if (nombreVacio && contraVacia) {
+            throw new IllegalArgumentException("Error: No puede dejar ambos espacios vacíos");
+        }
+
+        int indicador;
+        if (nombreVacio) indicador = 1; // Solo contra
+        else if (contraVacia) indicador = 2; // Solo nombre
+        else indicador = 3; // Ambos
+
+        modificarDatos(nuevoNombre, nuevaContra, indicador);
+        return indicador;
+    }
+    
     public void eliminarCuenta(){
         jugadores.set(jugador1, null);
     }
@@ -351,7 +368,25 @@ public class Battleship{
         }
         return iconoOG;
     }
+    
+    public ImageIcon getIconoGolpe(int fila, int col) {
+        Barco[][] tableroEnemigo = (turno == 1) ? barcos_Player2 : barcos_Player1;
+        if (tableroEnemigo[fila][col] != null) {
+            return tableroEnemigo[fila][col].getIconHits();
+        }
+        return null;
+    }
 
+    public String getNombreBarcoEn(int fila, int col) {
+        Barco[][] tableroEnemigo = (turno == 1) ? barcos_Player2 : barcos_Player1;
+        return (tableroEnemigo[fila][col] != null) ? tableroEnemigo[fila][col].getNombre() : "Agua";
+    }
+    
+    public int getVidasBarcoEn(int fila, int col) {
+        Barco[][] tableroEnemigo = (turno == 1) ? barcos_Player2 : barcos_Player1;
+        return (tableroEnemigo[fila][col] != null) ? tableroEnemigo[fila][col].getCant_bombas() : 0;
+    }
+    
     public ArrayList<Player> getRanking(){
         ArrayList<Player> ranking= new ArrayList <>(jugadores);
         Player guardarDato;
@@ -370,6 +405,23 @@ public class Battleship{
         return ranking; 
     }
 
+    public boolean tienePartidasRegistradas() {
+        String[] partidas = getUltimasPartidas();
+        if (partidas == null) return false;
+        for (String p : partidas) {
+            if (p != null && !p.trim().isEmpty()) return true;
+        }
+        return false;
+    }
+
+    public boolean tieneRankingActivo() {
+        ArrayList<Player> ranking = getRanking();
+        for (Player p : ranking) {
+            if (p != null && p.getPuntos() > 0) return true;
+        }
+        return false;
+    }
+    
     public String[] getUltimasPartidas(){
         return jugadores.get(jugador1).getUltimasPartidas();
     }
@@ -424,5 +476,20 @@ public class Battleship{
                 contTipos[1][getTipoIndex(ID)]++;
             }
         }
+    }
+    
+    public int estadoColocacion() {
+        if (barcosDisponibles > 0) return 0;
+        
+        turno(); //cambia el turno
+        if (turno == 2) {
+            barcosDisponibles = dificultad.barcosDisponibles; //reinicia para J2
+            return 1; 
+        }
+        return 2;//Ambos listos
+    }
+    
+    public boolean isGameOver() {
+        return barcosVivosPlayer1 <= 0 || barcosVivosPlayer2 <= 0;
     }
 }
